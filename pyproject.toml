@@ -50,7 +50,7 @@ all = [
 ]
 
 [project.scripts]
-guixi = "guixi:main"
+guixi = "guixi.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/guixi/guixi"
