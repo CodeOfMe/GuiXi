@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuiXi (龟息) - Bandwidth-Efficient LLM Inference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            margin-bottom: 15px;
+            color: #1a1a2e;
+            border-bottom: 2px solid #16213e;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: #16213e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #1a1a2e;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #16213e;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        #response {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #16213e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        a {
+            color: #16213e;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>GuiXi (龟息)</h1>
+            <p class="subtitle">Bandwidth-Efficient LLM Inference Framework</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="panel">
+                <h2>Inference</h2>
+                <div class="form-group">
+                    <label for="prompt">Prompt:</label>
+                    <textarea id="prompt" placeholder="Enter your prompt here...">What is artificial intelligence?</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="maxTokens">Max Tokens:</label>
+                    <input type="number" id="maxTokens" value="100" min="1" max="10000">
+                </div>
+
+                <div class="form-group">
+                    <label for="temperature">Temperature:</label>
+                    <input type="number" id="temperature" value="0.7" min="0" max="2" step="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label for="compression">Compression:</label>
+                    <select id="compression">
+                        <option value="lz4" selected>LZ4 (Fast)</option>
+                        <option value="zstd">ZSTD (High Ratio)</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cache">Cache Policy:</label>
+                    <select id="cache">
+                        <option value="read" selected>Read (Use Cache)</option>
+                        <option value="write">Write (Save to Cache)</option>
+                        <option value="read_write">Read/Write</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+
+                <button id="runBtn" onclick="runInference()">Run Inference</button>
+                <button class="btn-secondary" onclick="clearResponse()">Clear</button>
+
+                <div id="responseContainer" style="margin-top: 20px;">
+                    <label>Response:</label>
+                    <div id="response">Response will appear here...</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTokens">0</div>
+                        <div class="stat-label">Total Tokens</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="compressionRatio">0x</div>
+                        <div class="stat-label">Compression Ratio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="cacheHitRate">0%</div>
+                        <div class="stat-label">Cache Hit Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="rawBytes">0</div>
+                        <div class="stat-label">Raw Bytes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="compressedBytes">0</div>
+                        <div class="stat-label">Compressed Bytes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bandwidthSavings">0%</div>
+                        <div class="stat-label">Bandwidth Savings</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button class="btn-secondary" onclick="refreshStats()">Refresh Stats</button>
+                    <button class="btn-secondary" onclick="clearCache()">Clear Cache</button>
+                </div>
+            </div>
+
+            <div class="panel full-width">
+                <h2>API Documentation</h2>
+                <div style="font-family: monospace; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+                    <p><strong>POST /api/infer</strong> - Run single inference</p>
+                    <p><strong>POST /api/batch</strong> - Run batched inference</p>
+                    <p><strong>GET /api/cache/stats</strong> - Get cache statistics</p>
+                    <p><strong>POST /api/cache/clear</strong> - Clear cache</p>
+                    <p><strong>POST /api/compress</strong> - Compress token data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>GuiXi v0.1.0 | <a href="https://github.com/guixi/guixi">GitHub</a></p>
+    </footer>
+
+    <script>
+        let stats = {
+            totalTokens: 0,
+            rawBytes: 0,
+            compressedBytes: 0,
+            cacheHits: 0,
+            cacheMisses: 0
+        };
+
+        async function runInference() {
+            const btn = document.getElementById('runBtn');
+            const responseDiv = document.getElementById('responseContainer');
+
+            btn.disabled = true;
+            responseDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Running inference...</p></div>';
+
+            try {
+                const response = await fetch('/api/infer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: document.getElementById('prompt').value,
+                        max_tokens: parseInt(document.getElementById('maxTokens').value),
+                        temperature: parseFloat(document.getElementById('temperature').value),
+                        compression: document.getElementById('compression').value,
+                        cache: document.getElementById('cache').value
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const data = result.data;
+                    const statsData = data.stats || {};
+
+                    stats.totalTokens += data.tokens ? data.tokens.length : 0;
+                    stats.rawBytes += statsData.raw_bytes || 0;
+                    stats.compressedBytes += statsData.compressed_bytes || 0;
+                    stats.cacheHits += statsData.cache_hit_rate > 0 ? 1 : 0;
+                    stats.cacheMisses += statsData.cache_hit_rate === 0 ? 1 : 0;
+
+                    updateStats();
+
+                    responseDiv.innerHTML = `<label>Response:</label><div id="response">${data.text || JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    responseDiv.innerHTML = `<div class="error">Error: ${result.error}</div>`;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `<div class="error">Network error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function clearResponse() {
+            document.getElementById('prompt').value = '';
+            document.getElementById('responseContainer').innerHTML =
+                '<label>Response:</label><div id="response">Response will appear here...</div>';
+        }
+
+        function updateStats() {
+            document.getElementById('totalTokens').textContent = stats.totalTokens;
+            document.getElementById('rawBytes').textContent = formatBytes(stats.rawBytes);
+            document.getElementById('compressedBytes').textContent = formatBytes(stats.compressedBytes);
+
+            const ratio = stats.rawBytes / Math.max(stats.compressedBytes, 1);
+            document.getElementById('compressionRatio').textContent = ratio.toFixed(2) + 'x';
+
+            const total = stats.cacheHits + stats.cacheMisses;
+            const hitRate = total > 0 ? (stats.cacheHits / total * 100) : 0;
+            document.getElementById('cacheHitRate').textContent = hitRate.toFixed(1) + '%';
+
+            const savings = stats.rawBytes > 0 ?
+                ((1 - stats.compressedBytes / stats.rawBytes) * 100) : 0;
+            document.getElementById('bandwidthSavings').textContent = savings.toFixed(1) + '%';
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function refreshStats() {
+            try {
+                const response = await fetch('/api/cache/stats');
+                const result = await response.json();
+
+                if (result.success) {
+                    stats.cacheHits = result.data.hits;
+                    stats.cacheMisses = result.data.misses;
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Failed to refresh stats:', error);
+            }
+        }
+
+        async function clearCache() {
+            try {
+                const response = await fetch('/api/cache/clear', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    stats = {
+                        totalTokens: 0,
+                        rawBytes: 0,
+                        compressedBytes: 0,
+                        cacheHits: 0,
+                        cacheMisses: 0
+                    };
+                    updateStats();
+                    alert('Cache cleared successfully');
+                }
+            } catch (error) {
+                console.error('Failed to clear cache:', error);
+            }
+        }
+
+        refreshStats();
+    </script>
+</body>
+</html>

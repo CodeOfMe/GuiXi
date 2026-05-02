@@ -1,0 +1,53 @@
+{
+  "description": "Test cases for GuiXi",
+  "version": "1.0",
+  "test_cases": [
+    {
+      "id": "case_001",
+      "name": "Basic compression test",
+      "input": {
+        "tokens": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "compression": "lz4"
+      },
+      "expected_output": {
+        "compression_ratio_min": 1.0,
+        "decompression_matches": true
+      }
+    },
+    {
+      "id": "case_002",
+      "name": "Cache hit test",
+      "input": {
+        "prompt": "What is AI?",
+        "cache_policy": "read_write"
+      },
+      "expected_output": {
+        "first_request_cached": false,
+        "second_request_cached": true
+      }
+    },
+    {
+      "id": "case_003",
+      "name": "Delta sync test",
+      "input": {
+        "old_state": [1, 2, 3, 4, 5],
+        "new_state": [1, 2, 6, 7, 8]
+      },
+      "expected_output": {
+        "delta_has_additions": true,
+        "delta_has_deletions": true
+      }
+    },
+    {
+      "id": "case_004",
+      "name": "Protocol encoding test",
+      "input": {
+        "tokens": [100, 200, 300, 400, 500]
+      },
+      "expected_output": {
+        "encoded_length_gt_header": true,
+        "decoded_matches_original": true
+      }
+    }
+  ]
+}

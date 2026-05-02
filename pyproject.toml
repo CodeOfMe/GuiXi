@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guixi"
+version = "0.1.0"
+description = "Bandwidth-efficient LLM inference framework - 龟息"
+readme = "README.md"
+license = {text = "GPL-3.0"}
+authors = [
+    {name = "GuiXi Team", email = "team@guixi.dev"}
+]
+keywords = ["llm", "inference", "bandwidth", "compression", "caching", "ai", "turtle"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "lz4>=4.0.0",
+    "zstandard>=0.21.0",
+    "numpy>=1.24.0",
+    "websockets>=11.0",
+    "flask>=3.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+gui = [
+    "PySide6>=6.5.0",
+    "pyqtgraph>=0.13.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+all = [
+    "guixi[gui,dev]",
+]
+
+[project.scripts]
+guixi = "guixi:main"
+
+[project.urls]
+Homepage = "https://github.com/guixi/guixi"
+Documentation = "https://guixi.readthedocs.io"
+Repository = "https://github.com/guixi/guixi"
+Issues = "https://github.com/guixi/guixi/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["guixi*"]
+
+[tool.setuptools.package-data]
+guixi = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"

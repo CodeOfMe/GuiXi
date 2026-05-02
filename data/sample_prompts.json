@@ -1,0 +1,17 @@
+{
+  "description": "Sample prompts for bandwidth benchmarking",
+  "version": "1.0",
+  "category": "general_knowledge",
+  "prompts": [
+    "What is artificial intelligence?",
+    "Explain machine learning in simple terms",
+    "What are the benefits of renewable energy?",
+    "How does photosynthesis work?",
+    "Describe the water cycle",
+    "What is quantum computing?",
+    "Explain the theory of relativity",
+    "What are neural networks?",
+    "How do vaccines work?",
+    "What is climate change?"
+  ]
+}
